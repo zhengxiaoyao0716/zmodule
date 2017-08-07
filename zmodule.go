@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 
 	"github.com/kardianos/service"
 
@@ -205,6 +206,10 @@ var Cmds = map[string]Command{
 				}
 			}
 
+			if len(args) == 0 {
+				args = []string{"(NIL)"}
+			}
+
 			ParseCmd(parsed, args, map[string]Command{
 				"(NIL)": Command{
 					"Quick start with last args.",
@@ -241,10 +246,15 @@ func ParseCmd(parsed string, args []string, cmds map[string]Command) {
 	if len(args) > 0 {
 		console.PushLine(args[0])
 		args = args[1:]
-	} else {
-		console.PushLine("(NIL)")
 	}
-	arg := console.ReadLine()
+
+	linked := []string{}
+	for arg := range cmds {
+		linked = append(linked, arg)
+	}
+
+	sort.Strings(linked)
+	arg := strings.TrimSpace(console.ReadLine(fmt.Sprintf("Usage: %s\n(You can also enter '--help' to check details)\n> ", strings.Join(linked, " "))))
 	switch arg {
 	default:
 		if cmd, ok := cmds[arg]; ok {
@@ -253,17 +263,12 @@ func ParseCmd(parsed string, args []string, cmds map[string]Command) {
 		}
 		fmt.Printf("%s: invalid option: '%s' for Command '%s'.\n", info.Name(), arg, parsed)
 		fallthrough
-	case "--Help":
+	case "--help":
 		fallthrough
 	case "-h":
 		fmt.Println("Usage:", parsed, "<Command>")
 		fmt.Println()
 		fmt.Println("Commands list:")
-		linked := []string{}
-		for arg := range cmds {
-			linked = append(linked, arg)
-		}
-		sort.Strings(linked)
 		for _, arg := range linked {
 			cmd := cmds[arg]
 			fmt.Printf("    %10s\t%s\n", arg, cmd.Usage)
@@ -329,7 +334,11 @@ func Main(name string, scfg *service.Config, run func(), cusKs ...[2]string) {
 		log.Fatal(err)
 	}
 
-	ParseCmd(name, os.Args[1:], Cmds)
+	args := os.Args[1:]
+	if len(args) == 0 {
+		args = []string{"(NIL)"}
+	}
+	ParseCmd(name, args, Cmds)
 }
 
 func init() {
