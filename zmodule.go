@@ -205,7 +205,7 @@ var Cmds = map[string]Command{
 				}
 			}
 
-			parseCmd(parsed, args, map[string]Command{
+			ParseCmd(parsed, args, map[string]Command{
 				"(NIL)": Command{
 					"Quick start with last args.",
 					func(parsed string, args []string) {
@@ -236,7 +236,8 @@ var Cmds = map[string]Command{
 		}},
 }
 
-func parseCmd(parsed string, args []string, cmds map[string]Command) {
+// ParseCmd .
+func ParseCmd(parsed string, args []string, cmds map[string]Command) {
 	if len(args) > 0 {
 		console.PushLine(args[0])
 		args = args[1:]
@@ -328,7 +329,7 @@ func Main(name string, scfg *service.Config, run func(), cusKs ...[2]string) {
 		log.Fatal(err)
 	}
 
-	parseCmd(name, os.Args[1:], Cmds)
+	ParseCmd(name, os.Args[1:], Cmds)
 }
 
 func init() {
