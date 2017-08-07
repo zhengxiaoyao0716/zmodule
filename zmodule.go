@@ -254,7 +254,7 @@ func ParseCmd(parsed string, args []string, cmds map[string]Command) {
 	}
 
 	sort.Strings(linked)
-	arg := strings.TrimSpace(console.ReadLine(fmt.Sprintf("Usage: %s\n(You can also enter '--help' to check details)\n> ", strings.Join(linked, " "))))
+	arg := strings.TrimSpace(console.ReadWord(fmt.Sprintf("Usage: %s\n(You can also enter '--help' to check details)\n> ", strings.Join(linked, " "))))
 	switch arg {
 	default:
 		if cmd, ok := cmds[arg]; ok {
