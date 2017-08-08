@@ -1,3 +1,4 @@
+// Package event can be used independence without zmodule.
 package event
 
 import (
@@ -54,8 +55,14 @@ const (
 func Emit(i KeyIndex, d interface{}) { pool.Emit(ks[i], d) }
 
 // On .
-func On(i KeyIndex, h func(Event) error) {
-	pool.On(ks[i], func(e event.Event) error { return h(Event(e)) })
+// @return id of the listener, you can use it to remove the handler.
+func On(i KeyIndex, h func(Event) error) string {
+	return pool.On(ks[i], func(e event.Event) error { return h(Event(e)) }).ID
+}
+
+// Off .
+func Off(i KeyIndex, id string) {
+	pool.Off(ks[i], id)
 }
 
 // Pool provide a single instance of event pool
@@ -70,14 +77,23 @@ func Init(payload interface{}, cusKs ...[2]string) {
 	}
 	pool = event.NewRestrictPool(ks...)
 
+	ids := []string{}
 	for _, h := range inits {
-		On(keyInit, h)
+		ids = append(ids, On(keyInit, h))
 	}
 	inits = nil
+
 	Emit(keyInit, payload)
+	pool.Wait()
+
+	for _, id := range ids {
+		Off(keyInit, id)
+	}
 }
 
 // OnInit used to listener the `keyInit` event, witch send inside `Init` function.
+// This function must called before the `Init` function execute.
+// And after `Init` execute, all the handlers would be removed.
 func OnInit(h func(Event) error) {
 	inits = append(inits, h)
 }
