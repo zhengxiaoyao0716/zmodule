@@ -12,7 +12,7 @@ import (
 	"github.com/zhengxiaoyao0716/zmodule/info"
 )
 
-// Config .
+// C .
 type C map[string]interface{}
 
 // GetString .
@@ -23,12 +23,17 @@ func (c *C) GetString(name string) string {
 	return ""
 }
 
-// GetInt .
-func (c *C) GetInt(name string) int {
+// GetNum .
+func (c *C) GetNum(name string) float64 {
 	if value, ok := (*cfg)[name]; ok {
-		return value.(int)
+		return value.(float64)
 	}
 	return 0
+}
+
+// GetInt .
+func (c *C) GetInt(name string) int {
+	return int(c.GetNum(name))
 }
 
 // GetBool .
