@@ -12,6 +12,7 @@ import (
 	"github.com/kardianos/service"
 
 	"github.com/zhengxiaoyao0716/util/console"
+	"github.com/zhengxiaoyao0716/util/cout"
 	"github.com/zhengxiaoyao0716/util/flag"
 	"github.com/zhengxiaoyao0716/zmodule/config"
 	"github.com/zhengxiaoyao0716/zmodule/event"
@@ -192,10 +193,10 @@ var Cmds = map[string]Command{
 		}},
 	"version": Command{
 		"Show the version.",
-		func(string, []string) { fmt.Println(info.Version()) }},
+		func(string, []string) { console.Log(info.Version()) }},
 	"info": Command{
 		"Show the info.",
-		func(string, []string) { fmt.Println(info.Info()) }},
+		func(string, []string) { console.Log(info.Info()) }},
 	"service": Command{
 		"Control the system service.",
 		func(parsed string, args []string) {
@@ -252,28 +253,35 @@ func ParseCmd(parsed string, args []string, cmds map[string]Command) {
 	for arg := range cmds {
 		linked = append(linked, arg)
 	}
-
 	sort.Strings(linked)
-	arg := strings.TrimSpace(console.ReadWord(fmt.Sprintf("Usage: %s\n(You can also enter '--help' to check details)\n> ", strings.Join(linked, " "))))
-	switch arg {
-	default:
-		if cmd, ok := cmds[arg]; ok {
-			cmd.Handler(parsed+" "+arg, args)
-			return
-		}
-		fmt.Printf("%s: invalid option: '%s' for Command '%s'.\n", info.Name(), arg, parsed)
-		fallthrough
-	case "--help":
-		fallthrough
-	case "-h":
-		fmt.Println("Usage:", parsed, "<Command>")
-		fmt.Println()
-		fmt.Println("Commands list:")
-		for _, arg := range linked {
-			cmd := cmds[arg]
-			fmt.Printf("    %10s\t%s\n", arg, cmd.Usage)
+
+	var parseArg func(arg string)
+	parseArg = func(arg string) {
+		switch strings.TrimSpace(arg) {
+		case "--help":
+			fallthrough
+		case "-h":
+			console.Log("Usage: %s <%s>", cout.Info(parsed), cout.Info("Command"))
+			console.Log("")
+			console.Log("Commands list:")
+			for _, arg := range linked {
+				cmd := cmds[arg]
+				console.Log("    %s\t%s", cout.Info("%10s", arg), cmd.Usage)
+			}
+			parseArg(console.ReadWord())
+		default:
+			if cmd, ok := cmds[arg]; ok {
+				cmd.Handler(parsed+" "+arg, args)
+				return
+			}
+			console.Log("\a%s: invalid option: '%s' for command '%s'.", info.Name(), cout.Err(arg), parsed)
 		}
 	}
+	parseArg(console.ReadWord(fmt.Sprintf(
+		"Usage: %s <%s>\n(You can also enter '--help' to check details)\n> ",
+		cout.Info(parsed),
+		cout.Info(strings.Join(linked, " ")),
+	)))
 }
 
 // Those values should be assigned during compile statement.

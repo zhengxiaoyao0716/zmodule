@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/zhengxiaoyao0716/util/cout"
+
 	"github.com/zhengxiaoyao0716/zmodule/event"
 )
 
@@ -64,13 +66,13 @@ func Info() string {
 				d -= 8
 				a = "author: " + a
 			}
-			return "| " + nv + strings.Repeat(" ", d) + a + " |"
+			return "| " + cout.Info(nv+strings.Repeat(" ", d)+a) + " |"
 		}
 		if li-len(a) > 8 {
 			a = "author: " + a
 		}
-		return "| " + fmt.Sprintf("%-"+l+"s", nv) + " |\n" +
-			"| " + fmt.Sprintf("%+"+l+"s", a) + " |"
+		return "| " + cout.Info(fmt.Sprintf("%-"+l+"s", nv)) + " |\n" +
+			"| " + cout.Info(fmt.Sprintf("%+"+l+"s", a)) + " |"
 	})
 	lines = append(lines, lines[0])
 	for _, kv := range [][2]string{
@@ -84,13 +86,15 @@ func Info() string {
 	} {
 		func(k, v string) {
 			if k == "" {
-				k = strings.Repeat("-", kli)
-				v = strings.Repeat("-", vli)
+				lines = append(lines, func() string {
+					return "| " + strings.Repeat("-", kli) + " | " + strings.Repeat("-", vli) + " |"
+				})
+				return
 			}
 			kli = max(kli, len(k))
 			vli = max(vli, len(v))
 			lines = append(lines, func() string {
-				return "| " + fmt.Sprintf("%+"+kl+"s", k) + " | " + fmt.Sprintf("%-"+vl+"s", v) + " |"
+				return "| " + cout.Info(fmt.Sprintf("%+"+kl+"s", k)) + " | " + cout.Info(fmt.Sprintf("%-"+vl+"s", v)) + " |"
 			})
 		}(kv[0], kv[1])
 	}
@@ -110,7 +114,7 @@ func Info() string {
 }
 
 // Version .
-func Version() string { return fmt.Sprintf("Version: %s\n", i.Version) }
+func Version() string { return fmt.Sprintf("Version: %s\n", cout.Info(i.Version)) }
 
 func init() {
 	event.OnInit(func(e event.Event) error {
