@@ -162,7 +162,7 @@ var srv service.Service
 
 // Cmds .
 var Cmds = map[string]Command{
-	"(NIL)": Command{
+	"": {
 		"Quick run with last args.",
 		func(parsed string, args []string) {
 			if !config.HasSavedCfg() {
@@ -183,7 +183,7 @@ var Cmds = map[string]Command{
 				log.Fatalln(err)
 			}
 		}},
-	"run": Command{
+	"run": {
 		"Run.",
 		func(parsed string, args []string) {
 			parseFlag(args)
@@ -191,72 +191,87 @@ var Cmds = map[string]Command{
 				log.Fatalln(err)
 			}
 		}},
-	"version": Command{
+	"version": {
 		"Show the version.",
 		func(string, []string) { console.Log(info.Version()) }},
-	"info": Command{
+	"info": {
 		"Show the info.",
 		func(string, []string) { console.Log(info.Info()) }},
-	"service": Command{
+	"service": {
 		"Control the system service.",
-		func(parsed string, args []string) {
-			control := func(arg string) {
-				err := service.Control(srv, arg)
-				if err != nil {
-					log.Fatal(err)
+		func() func(string, []string) {
+			var handler func(string, []string)
+			handler = func(parsed string, args []string) {
+				control := func(arg string) {
+					err := service.Control(srv, arg)
+					if err != nil {
+						log.Fatal(err)
+					}
 				}
-			}
 
-			if len(args) == 0 {
-				args = []string{"(NIL)"}
-			}
-
-			ParseCmd(parsed, args, map[string]Command{
-				"(NIL)": Command{
-					"Quick start with last args.",
-					func(parsed string, args []string) {
-						if !config.HasSavedCfg() {
+				cmdHandler := ParseCmd(map[string]Command{
+					"": {
+						"Quick start with last args.",
+						func(parsed string, args []string) {
+							if !config.HasSavedCfg() {
+								parseFlag(args)
+							}
+							control("start")
+						}},
+					"start": {
+						"Start the service.",
+						func(parsed string, args []string) {
 							parseFlag(args)
-						}
-						control("start")
-					}},
-				"start": Command{
-					"Start the service.",
-					func(parsed string, args []string) {
-						parseFlag(args)
-						control("start")
-					}},
-				"stop": Command{
-					"Stop the service.",
-					func(string, []string) { control("stop") }},
-				"restart": Command{
-					"Restart the service.",
-					func(string, []string) { control("restart") }},
-				"install": Command{
-					"Install the service.",
-					func(string, []string) { control("install") }},
-				"uninstall": Command{
-					"Uninstall the service.",
-					func(string, []string) { control("uninstall") }},
-			})
-		}},
+							control("start")
+						}},
+					"stop": {
+						"Stop the service.",
+						func(string, []string) { control("stop") }},
+					"restart": {
+						"Restart the service.",
+						func(string, []string) { control("restart") }},
+					"install": {
+						"Install the service.",
+						func(string, []string) { control("install") }},
+					"uninstall": {
+						"Uninstall the service.",
+						func(string, []string) { control("uninstall") }},
+				})
+
+				handler = func(parsed string, args []string) {
+					if len(args) == 0 {
+						args = []string{""}
+					}
+					cmdHandler(parsed, args)
+				}
+				handler(parsed, args)
+			}
+			return handler
+		}(),
+	},
 }
 
 // ParseCmd .
-func ParseCmd(parsed string, args []string, cmds map[string]Command) {
-	if len(args) > 0 {
-		console.PushLine(args[0])
-		args = args[1:]
-	}
-
+func ParseCmd(cmds map[string]Command) func(parsed string, args []string) {
 	linked := []string{}
 	for arg := range cmds {
 		linked = append(linked, arg)
 	}
 	sort.Strings(linked)
 
-	var parseArg func(arg string)
-	parseArg = func(arg string) {
+	var handler func(parsed string, args []string)
+	handler = func(parsed string, args []string) {
+		if len(args) > 0 {
+			console.PushLine(args[0])
+			args = args[1:]
+		}
+
+		arg := console.ReadWord(fmt.Sprintf(
+			"Usage: %s <%s>\n(You can also enter '--help' to check details)\n> ",
+			cout.Info(parsed),
+			cout.Info(strings.Join(linked, " ")),
+		))
+
 		switch strings.TrimSpace(arg) {
 		case "--help":
 			fallthrough
@@ -268,7 +283,7 @@ func ParseCmd(parsed string, args []string, cmds map[string]Command) {
 				cmd := cmds[arg]
 				console.Log("    %s\t%s", cout.Info("%10s", arg), cmd.Usage)
 			}
-			parseArg(console.ReadWord())
+			handler(parsed, []string{console.ReadWord()})
 		default:
 			if cmd, ok := cmds[arg]; ok {
 				cmd.Handler(parsed+" "+arg, args)
@@ -277,11 +292,7 @@ func ParseCmd(parsed string, args []string, cmds map[string]Command) {
 			console.Log("\a%s: invalid option: '%s' for command '%s'.", info.Name(), cout.Err(arg), parsed)
 		}
 	}
-	parseArg(console.ReadWord(fmt.Sprintf(
-		"Usage: %s <%s>\n(You can also enter '--help' to check details)\n> ",
-		cout.Info(parsed),
-		cout.Info(strings.Join(linked, " ")),
-	)))
+	return handler
 }
 
 // Those values should be assigned during compile statement.
@@ -344,9 +355,9 @@ func Main(name string, scfg *service.Config, run func(), cusKs ...[2]string) {
 
 	args := os.Args[1:]
 	if len(args) == 0 {
-		args = []string{"(NIL)"}
+		args = []string{""}
 	}
-	ParseCmd(name, args, Cmds)
+	ParseCmd(Cmds)(name, args)
 }
 
 func init() {
