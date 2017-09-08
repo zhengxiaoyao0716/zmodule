@@ -182,7 +182,8 @@ var Cmds = map[string]Command{
 
 				log.Fatalln(err)
 			}
-		}},
+		},
+	},
 	"run": {
 		"Run.",
 		func(parsed string, args []string) {
@@ -190,13 +191,16 @@ var Cmds = map[string]Command{
 			if err := srv.Run(); err != nil {
 				log.Fatalln(err)
 			}
-		}},
+		},
+	},
 	"version": {
 		"Show the version.",
-		func(string, []string) { console.Log(info.Version()) }},
+		func(string, []string) { console.Log(info.Version()) },
+	},
 	"info": {
 		"Show the info.",
-		func(string, []string) { console.Log(info.Info()) }},
+		func(string, []string) { console.Log(info.Info()) },
+	},
 	"service": {
 		"Control the system service.",
 		func() func(string, []string) {
@@ -217,25 +221,31 @@ var Cmds = map[string]Command{
 								parseFlag(args)
 							}
 							control("start")
-						}},
+						},
+					},
 					"start": {
 						"Start the service.",
 						func(parsed string, args []string) {
 							parseFlag(args)
 							control("start")
-						}},
+						},
+					},
 					"stop": {
 						"Stop the service.",
-						func(string, []string) { control("stop") }},
+						func(string, []string) { control("stop") },
+					},
 					"restart": {
 						"Restart the service.",
-						func(string, []string) { control("restart") }},
+						func(string, []string) { control("restart") },
+					},
 					"install": {
 						"Install the service.",
-						func(string, []string) { control("install") }},
+						func(string, []string) { control("install") },
+					},
 					"uninstall": {
 						"Uninstall the service.",
-						func(string, []string) { control("uninstall") }},
+						func(string, []string) { control("uninstall") },
+					},
 				})
 
 				handler = func(parsed string, args []string) {
@@ -267,7 +277,7 @@ func ParseCmd(cmds map[string]Command) func(parsed string, args []string) {
 		}
 
 		arg := console.ReadWord(fmt.Sprintf(
-			"Usage: %s <%s>\n(You can also enter '--help' to check details)\n> ",
+			"Usage: %s <%s>\n(You can also enter '--help' to check details)\n"+console.In,
 			cout.Info(parsed),
 			cout.Info(strings.Join(linked, " ")),
 		))
