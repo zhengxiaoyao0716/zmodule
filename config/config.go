@@ -23,6 +23,9 @@ func (c *C) GetString(name string) string {
 	return ""
 }
 
+// GetString .
+func GetString(name string) string { return cfg.GetString(name) }
+
 // GetNum .
 func (c *C) GetNum(name string) float64 {
 	if value, ok := (*cfg)[name]; ok {
@@ -31,10 +34,16 @@ func (c *C) GetNum(name string) float64 {
 	return 0
 }
 
+// GetNum .
+func GetNum(name string) float64 { return cfg.GetNum(name) }
+
 // GetInt .
 func (c *C) GetInt(name string) int {
 	return int(c.GetNum(name))
 }
+
+// GetInt .
+func GetInt(name string) int { return cfg.GetInt(name) }
 
 // GetBool .
 func (c *C) GetBool(name string) bool {
@@ -43,6 +52,9 @@ func (c *C) GetBool(name string) bool {
 	}
 	return false
 }
+
+// GetBool .
+func GetBool(name string) bool { return cfg.GetBool(name) }
 
 var cfgPath string
 
