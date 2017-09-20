@@ -26,25 +26,6 @@ func (c *C) GetString(name string) string {
 // GetString .
 func GetString(name string) string { return cfg.GetString(name) }
 
-// GetNum .
-func (c *C) GetNum(name string) float64 {
-	if value, ok := (*cfg)[name]; ok {
-		return value.(float64)
-	}
-	return 0
-}
-
-// GetNum .
-func GetNum(name string) float64 { return cfg.GetNum(name) }
-
-// GetInt .
-func (c *C) GetInt(name string) int {
-	return int(c.GetNum(name))
-}
-
-// GetInt .
-func GetInt(name string) int { return cfg.GetInt(name) }
-
 // GetBool .
 func (c *C) GetBool(name string) bool {
 	if value, ok := (*cfg)[name]; ok {
@@ -55,6 +36,33 @@ func (c *C) GetBool(name string) bool {
 
 // GetBool .
 func GetBool(name string) bool { return cfg.GetBool(name) }
+
+// GetNum .
+func (c *C) GetNum(name string) float64 {
+	if value, ok := (*cfg)[name]; ok {
+		return value.(float64)
+	}
+	return 0
+}
+
+// GetInt .
+func (c *C) GetInt(name string) int {
+	return int(c.GetNum(name))
+}
+
+// GetInt .
+func GetInt(name string) int { return cfg.GetInt(name) }
+
+// GetNum .
+func GetNum(name string) float64 { return cfg.GetNum(name) }
+
+// GetI64 .
+func (c *C) GetI64(name string) int64 {
+	return int64(c.GetNum(name))
+}
+
+// GetI64 .
+func GetI64(name string) int64 { return cfg.GetI64(name) }
 
 var cfgPath string
 
