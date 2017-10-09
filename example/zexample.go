@@ -8,7 +8,7 @@ import (
 )
 
 // In this way that override those values,
-// you can `main` as the module name, instead of `github.com/zhengxiaoyao0716/zmodule`.
+// you can use `main` as the module name, instead of `github.com/zhengxiaoyao0716/zmodule`.
 var (
 	Version   string // `git describe --tags`
 	Built     string // `date +%FT%T%z`
