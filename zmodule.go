@@ -67,7 +67,7 @@ func (p *program) Stop(s service.Service) error {
 
 // Argument .
 type Argument struct {
-	Type    string // string, int, bool
+	Type    string // string, int, float, bool
 	Default interface{}
 	Usage   string
 }
@@ -96,6 +96,14 @@ func parseFlag(args []string) {
 			}
 		case "int":
 			f := flag.Int(name, arg.Usage)
+			flags[name] = func() interface{} {
+				if *f == nil {
+					return nil
+				}
+				return (*f)()
+			}
+		case "float":
+			f := flag.Float(name, arg.Usage)
 			flags[name] = func() interface{} {
 				if *f == nil {
 					return nil
