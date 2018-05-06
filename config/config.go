@@ -16,8 +16,8 @@ import (
 type C map[string]interface{}
 
 // GetString .
-func (c *C) GetString(name string) string {
-	if value, ok := (*cfg)[name]; ok {
+func (c C) GetString(name string) string {
+	if value, ok := c[name]; ok {
 		return value.(string)
 	}
 	return ""
@@ -27,8 +27,8 @@ func (c *C) GetString(name string) string {
 func GetString(name string) string { return cfg.GetString(name) }
 
 // GetBool .
-func (c *C) GetBool(name string) bool {
-	if value, ok := (*cfg)[name]; ok {
+func (c C) GetBool(name string) bool {
+	if value, ok := c[name]; ok {
 		return value.(bool)
 	}
 	return false
@@ -38,15 +38,15 @@ func (c *C) GetBool(name string) bool {
 func GetBool(name string) bool { return cfg.GetBool(name) }
 
 // GetNum .
-func (c *C) GetNum(name string) float64 {
-	if value, ok := (*cfg)[name]; ok {
+func (c C) GetNum(name string) float64 {
+	if value, ok := c[name]; ok {
 		return value.(float64)
 	}
 	return 0
 }
 
 // GetInt .
-func (c *C) GetInt(name string) int {
+func (c C) GetInt(name string) int {
 	return int(c.GetNum(name))
 }
 
@@ -57,13 +57,14 @@ func GetInt(name string) int { return cfg.GetInt(name) }
 func GetNum(name string) float64 { return cfg.GetNum(name) }
 
 // GetI64 .
-func (c *C) GetI64(name string) int64 {
+func (c C) GetI64(name string) int64 {
 	return int64(c.GetNum(name))
 }
 
 // GetI64 .
 func GetI64(name string) int64 { return cfg.GetI64(name) }
 
+// path to dump and load the config
 var cfgPath string
 
 // Dump .
@@ -72,6 +73,7 @@ func (c *C) Dump() error { return config.Dump(c, cfgPath) }
 // Load .
 func (c *C) Load(p string) error { return config.Load(p, c) }
 
+// global config
 var cfg *C
 
 // Config return the instance of the inner config.

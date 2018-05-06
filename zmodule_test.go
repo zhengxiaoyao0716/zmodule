@@ -7,13 +7,13 @@ import (
 
 func TestParseCmd(t *testing.T) {
 	fmt.Println("\n================================")
-	parseCmd("test", []string{"-h"}, Cmds)
+	ParseCmd(Cmds)("test", []string{"-h"})
 
 	fmt.Println("\n================================")
-	parseCmd("test", []string{"version"}, Cmds)
+	ParseCmd(Cmds)("test", []string{"version"})
 
 	fmt.Println("\n================================")
-	parseCmd("test", []string{"service", "-h"}, Cmds)
+	ParseCmd(Cmds)("test", []string{"service", "-h"})
 
 	fmt.Println("\n================================")
 }

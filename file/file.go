@@ -20,7 +20,15 @@ func MoveAway(fp string) error {
 			return err
 		}
 	}
-	err := os.Rename(fp, fmt.Sprintf("%s.%d", fp, time.Now().Unix()))
+	ext := ""
+	for i := len(fp) - 1; i >= 0 && !os.IsPathSeparator(fp[i]); i-- {
+		if fp[i] == '.' {
+			ext = fp[i:]
+			fp = fp[0:i]
+			break
+		}
+	}
+	err := os.Rename(fp+ext, fmt.Sprintf("%s.%d%s", fp, time.Now().Unix(), ext))
 	if err != nil {
 		return err
 	}

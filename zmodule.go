@@ -81,8 +81,8 @@ var Args = map[string]Argument{
 	"log":      {"string", "", "Path to storage logger files."},
 }
 
-// parseFlag parsed the remained args, load them to config, then dump the config to save them.
-func parseFlag(args []string) {
+// ParseFlag parsed the remained args, load them to config, then dump the config to save them.
+func ParseFlag(args []string) config.C {
 	flags := map[string]func() interface{}{}
 	for name, arg := range Args {
 		switch arg.Type {
@@ -124,7 +124,7 @@ func parseFlag(args []string) {
 	flag.CommandLine.Parse(args)
 
 	cfgPath := flags["config"]()
-	cfg := &config.C{}
+	cfg := config.C{}
 	if cfgPath != nil {
 		if err := cfg.Load(cfgPath.(string)); err != nil {
 			log.Fatalln(err)
@@ -134,27 +134,32 @@ func parseFlag(args []string) {
 	for name, fn := range flags {
 		// Launch arguments
 		if value := fn(); value != nil {
-			(*cfg)[name] = value
+			cfg[name] = value
 			continue
 		}
 		// User config
-		if _, ok := (*cfg)[name]; ok {
+		if _, ok := cfg[name]; ok {
 			continue
 		}
 		// Os environment
 		if value := os.Getenv(info.Name() + "_" + name); value != "" {
-			(*cfg)[name] = value
+			cfg[name] = value
 			continue
 		}
 		// Default value in code
 		if value := Args[name].Default; value != nil {
-			(*cfg)[name] = value
+			cfg[name] = value
 			continue
 		}
 		// Not found
 		log.Fatalln(errors.New("missing runner argument: name=" + name))
 	}
 
+	return cfg
+}
+
+func parseFlag(args []string) {
+	cfg := ParseFlag(args)
 	if err := cfg.Dump(); err != nil {
 		log.Fatalln(err)
 	}
@@ -301,7 +306,6 @@ func ParseCmd(cmds map[string]Command) func(parsed string, args []string) {
 				cmd := cmds[arg]
 				console.Log("    %s\t%s", cout.Info("%10s", arg), cmd.Usage)
 			}
-			handler(parsed, []string{console.ReadWord()})
 		default:
 			if cmd, ok := cmds[arg]; ok {
 				cmd.Handler(parsed+" "+arg, args)
