@@ -2,6 +2,7 @@ package zmodule
 
 import (
 	"errors"
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -13,7 +14,6 @@ import (
 
 	"github.com/zhengxiaoyao0716/util/console"
 	"github.com/zhengxiaoyao0716/util/cout"
-	"github.com/zhengxiaoyao0716/util/flag"
 	"github.com/zhengxiaoyao0716/zmodule/config"
 	"github.com/zhengxiaoyao0716/zmodule/event"
 	"github.com/zhengxiaoyao0716/zmodule/file"
@@ -67,7 +67,6 @@ func (p *program) Stop(s service.Service) error {
 
 // Argument .
 type Argument struct {
-	Type    string // string, int, float, bool
 	Default interface{}
 	Usage   string
 }
@@ -76,65 +75,50 @@ type Argument struct {
 // You can add your custom args directly, and then they would be parsed into config.
 // Please don't change both the name and the type of the args reserved below.
 var Args = map[string]Argument{
-	"config":   {"string", "", "Config json file path."},
-	"work_dir": {"string", "", "Directory to find or storage files."},
-	"log":      {"string", "", "Path to storage logger files."},
+	"config":   {"", "Config json file path."},
+	"work_dir": {"", "Directory to find or storage files."},
+	"log":      {"", "Path to storage logger files."},
 }
 
 // ParseFlag parsed the remained args, load them to config, then dump the config to save them.
 func ParseFlag(args []string) config.C {
 	flags := map[string]func() interface{}{}
 	for name, arg := range Args {
-		switch arg.Type {
-		case "string":
-			f := flag.String(name, arg.Usage)
-			flags[name] = func() interface{} {
-				if *f == nil {
-					return nil
-				}
-				return (*f)()
-			}
-		case "int":
-			f := flag.Int(name, arg.Usage)
-			flags[name] = func() interface{} {
-				if *f == nil {
-					return nil
-				}
-				return (*f)()
-			}
-		case "float":
-			f := flag.Float(name, arg.Usage)
-			flags[name] = func() interface{} {
-				if *f == nil {
-					return nil
-				}
-				return (*f)()
-			}
-		case "bool":
-			f := flag.Bool(name, arg.Usage)
-			flags[name] = func() interface{} {
-				if *f == nil {
-					return nil
-				}
-				return (*f)()
-			}
+		switch arg.Default.(type) {
+		case string:
+			f := flag.String(name, arg.Default.(string), arg.Usage)
+			flags[name] = func() interface{} { return *f }
+		case int:
+			f := flag.Int(name, arg.Default.(int), arg.Usage)
+			flags[name] = func() interface{} { return *f }
+		case float64:
+			f := flag.Float64(name, arg.Default.(float64), arg.Usage)
+			flags[name] = func() interface{} { return *f }
+		case bool:
+			f := flag.Bool(name, arg.Default.(bool), arg.Usage)
+			flags[name] = func() interface{} { return *f }
 		}
 	}
 
 	flag.CommandLine.Parse(args)
 
-	cfgPath := flags["config"]()
+	modified := map[string]bool{}
+	flag.Visit(func(f *flag.Flag) {
+		modified[f.Name] = true
+	})
+
 	cfg := config.C{}
-	if cfgPath != nil {
-		if err := cfg.Load(cfgPath.(string)); err != nil {
+	if _, ok := modified["config"]; ok {
+		cfgPath := flags["config"]
+		if err := cfg.Load(cfgPath().(string)); err != nil {
 			log.Fatalln(err)
 		}
 	}
 
 	for name, fn := range flags {
 		// Launch arguments
-		if value := fn(); value != nil {
-			cfg[name] = value
+		if _, ok := modified[name]; ok {
+			cfg[name] = fn()
 			continue
 		}
 		// User config
