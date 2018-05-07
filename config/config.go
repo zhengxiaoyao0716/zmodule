@@ -39,15 +39,34 @@ func GetBool(name string) bool { return cfg.GetBool(name) }
 
 // GetNum .
 func (c C) GetNum(name string) float64 {
-	if value, ok := c[name]; ok {
-		return value.(float64)
+	value, ok := c[name]
+	if !ok {
+		return 0
 	}
-	return 0
+	switch value.(type) {
+	case int:
+		return float64(value.(int))
+	case float64:
+		return value.(float64)
+	default:
+		return 0
+	}
 }
 
 // GetInt .
 func (c C) GetInt(name string) int {
-	return int(c.GetNum(name))
+	value, ok := c[name]
+	if !ok {
+		return 0
+	}
+	switch value.(type) {
+	case int:
+		return value.(int)
+	case float64:
+		return int(value.(float64))
+	default:
+		return 0
+	}
 }
 
 // GetInt .
