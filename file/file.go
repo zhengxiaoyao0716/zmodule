@@ -1,39 +1,11 @@
 package file
 
 import (
-	"fmt"
-	"os"
 	"path"
 	"path/filepath"
-	"time"
 
 	"github.com/zhengxiaoyao0716/zmodule/event"
 )
-
-// MoveAway can to move away the file instead of delete it, used to avoid the file exist conflict.
-func MoveAway(fp string) error {
-	if _, err := os.Lstat(fp); err != nil {
-		if os.IsNotExist(err) {
-			return nil
-		}
-		if !os.IsExist(err) {
-			return err
-		}
-	}
-	ext := ""
-	for i := len(fp) - 1; i >= 0 && !os.IsPathSeparator(fp[i]); i-- {
-		if fp[i] == '.' {
-			ext = fp[i:]
-			fp = fp[0:i]
-			break
-		}
-	}
-	err := os.Rename(fp+ext, fmt.Sprintf("%s.%d%s", fp, time.Now().Unix(), ext))
-	if err != nil {
-		return err
-	}
-	return nil
-}
 
 var (
 	workDir string

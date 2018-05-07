@@ -14,9 +14,9 @@ import (
 
 	"github.com/zhengxiaoyao0716/util/console"
 	"github.com/zhengxiaoyao0716/util/cout"
+	"github.com/zhengxiaoyao0716/util/safefile"
 	"github.com/zhengxiaoyao0716/zmodule/config"
 	"github.com/zhengxiaoyao0716/zmodule/event"
-	"github.com/zhengxiaoyao0716/zmodule/file"
 	"github.com/zhengxiaoyao0716/zmodule/info"
 )
 
@@ -33,14 +33,7 @@ func (p *program) Start(s service.Service) error {
 		// file, err := os.OpenFile(config.LogPath(), os.O_APPEND|os.O_CREATE, 0666)
 		fp := config.LogPath()
 
-		if err := file.MoveAway(fp); err != nil {
-			return err
-		}
-
-		if err := os.MkdirAll(filepath.Dir(fp), 0600); err != nil {
-			return err
-		}
-		file, err := os.Create(fp)
+		file, err := safefile.Create(fp)
 		if err != nil {
 			return err
 		}
