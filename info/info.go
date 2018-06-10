@@ -57,7 +57,7 @@ func Info() string {
 		li := kli + vli + 3
 		l := strconv.Itoa(li)
 
-		nv := i.Name + " v" + i.Version
+		nv := i.Name + " " + i.Version
 		a := i.Author
 
 		d := li - (len(nv) + len(a))
