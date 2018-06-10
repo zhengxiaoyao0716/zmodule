@@ -1,4 +1,4 @@
-// Package helper provide some global static single instance.
+// Package info helper provide some global static single instance.
 package info
 
 import (
